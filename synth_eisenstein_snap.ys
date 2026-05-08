@@ -1,0 +1,30 @@
+# Yosys synthesis script for eisenstein_snap_lut on iCE40UP5K
+
+# Read design
+read_verilog eisenstein_snap_lut.v
+
+# Elaborate
+hierarchy -check -top eisenstein_snap_lut
+
+# High-level synthesis
+proc
+ fsm
+ opt
+ memory_bram -rules syn_xilinx
+ techmap -map +/brams.map
+
+# Optimization passes
+opt
+ clean
+ opt_clean
+
+# Map to iCE40 primitives
+synth_ice40 -top eisenstein_snap_lut -json eisenstein_snap_lut.json -blif eisenstein_snap_lut.blif
+
+# Report
+stat
+
+# Print utilization notes
+echo "=== Eisenstein Snap LUT Synthesis Complete ==="
+echo "Expected: ~1% LUTs, ~5.5% BRAM (57,344 bits of 1Mbit SPRAM)"
+echo "Compare with Pythagorean snap-lut: same BRAM, 6.8x more snap points"
